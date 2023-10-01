@@ -11,6 +11,7 @@ import com.pavi.ecom.model.CartItem;
 @Mapper(componentModel = "spring")
 public interface CartItemMapper {
 
+	@Mapping(source = "cart.id", target = "cartId")
 	CartItemDTO cartItemToCartItemDTO(CartItem cartItem);
 
 	CartItem cartItemDTOToCartItem(CartItemDTO cartItemDTO);

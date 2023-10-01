@@ -13,7 +13,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class CartItemDTO {
     private Long id;
-    //private CartDTO cart; // Assuming you want to store the cart's ID in the DTO
+    private Long cartId; // Assuming you want to store the cart's ID in the DTO
     private ProductDTO product; // Assuming you want to store the product's ID in the DTO
     private String size;
     private int quantity;

@@ -24,7 +24,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 public class CartItem {
 	
 	@Id
@@ -38,7 +37,15 @@ public class CartItem {
 	private Integer price;
 	private Integer discountedPrice;
 	private Long userId;
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
 	@JoinColumn(name="product_id")
 	private Product product;
+	
+	@Override
+	public String toString() {
+		return "CartItem [id=" + id + ", cart=" + cart + ", size=" + size + ", quantity=" + quantity + ", price="
+				+ price + ", discountedPrice=" + discountedPrice + ", userId=" + userId + ", product=" + product + "]";
+	}
+	
+	
 }

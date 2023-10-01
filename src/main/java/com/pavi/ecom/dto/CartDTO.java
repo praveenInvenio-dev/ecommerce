@@ -22,5 +22,4 @@ public class CartDTO {
     private int totalItem;
     private int totalDiscountPrice;
     private int discount;
-    private UsersDTO user;
 }

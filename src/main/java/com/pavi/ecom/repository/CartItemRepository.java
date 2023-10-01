@@ -15,8 +15,18 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
 	List<CartItem> findByUserId(Long userId);
 
-	// Custom query methods if needed
-//	@Query("SELECT ci From CartItem ci Where ci.cart=:cart And ci.product=:product And ci.size=:size And ci.userId=:userid")
-//	CartItem findIfCartExist(@Param("product") Product product, @Param("cart") Cart cart, @Param("size") String size,
-//			@Param("userid") Long userid);
+//	 Custom query methods if needed
+	@Query("SELECT ci From CartItem ci Where ci.cart.id=:cart And ci.product.id=:product And ci.size=:size And ci.userId=:userid")
+	List<CartItem> findIfCartExist(@Param("cart") Long cart,@Param("product") Long product,  @Param("size") String size,
+			@Param("userid") Long userid);
+	
+	@Query("SELECT ci FROM CartItem ci " +
+		       "WHERE ci.product.id = :product " +
+		       "AND ci.userId = :userId " +
+		       "AND ci.size = :size")
+		List<CartItem> findCartItemsByProductAndUserIdAndSize(
+		    @Param("product") Long productId,
+		    @Param("userId") Long userId,
+		    @Param("size") String size
+		);
 }

@@ -24,12 +24,16 @@ public class CartItemServiceImpl implements CartItemService {
 
 	private final CartItemRepository cartItemRepository;
 	private final CartItemMapper cartItemMapper;
+	
 
 	@Autowired
 	private ProductRepository productRepository;
 
 	@Autowired
 	private CartRepository cartRepository;
+	
+	@Autowired
+	private CartServiceImpl cartServiceImpl;
 
 	@Autowired
 	public CartItemServiceImpl(CartItemRepository cartItemRepository, CartItemMapper cartItemMapper) {
@@ -79,10 +83,12 @@ public class CartItemServiceImpl implements CartItemService {
 
 	@Override
 	public void deleteCartItemById(Long id) {
-		if (!cartItemRepository.existsById(id)) {
+		CartItem ct = this.cartItemRepository.findById(id).get();
+		if (ct == null) {
 			throw new CartItemException("Cart item not found with ID: " + id);
 		}
-		cartItemRepository.deleteById(id);
+		this.cartItemRepository.deleteById(id);
+		this.cartServiceImpl.updateCart(ct.getCart());
 	}
 
 	@Override
@@ -90,10 +96,9 @@ public class CartItemServiceImpl implements CartItemService {
 		List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
 		return cartItems.stream().map(cartItemMapper::cartItemToCartItemDTO).collect(Collectors.toList());
 	}
-	
+
 //	public CartItem isCartExist(Product product, Cart cart, String size, Long userid) {
 //		return cartItemRepository.findIfCartExist(product,cart,size,userid);
 //	}
-
 
 }

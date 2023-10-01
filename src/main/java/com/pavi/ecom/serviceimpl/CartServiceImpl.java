@@ -50,15 +50,14 @@ public class CartServiceImpl implements CartService {
 //        }
 		Users user = usersRepository.findById(cartDTO.getUserId()).get();
 		Cart cart = cartMapper.cartDTOToCart(cartDTO);
-		//cart.setUser(user);
+		// cart.setUser(user);
 		Cart createdCart = cartRepository.save(cart);
 		return cartMapper.cartToCartDTO(createdCart);
 	}
 
-	
 	public Optional<CartDTO> getCartById(Long id) {
 		return Optional.of(cartMapper.cartToCartDTO(cartRepository.findById(id).get()));
-		//System.out.println(cartOptional.getCartItem());
+		// System.out.println(cartOptional.getCartItem());
 //	//	if (cartOptional!=null) {
 //			return Optional.of(cartMapper.cartToCartDTO(cartOptional));
 //		} else {
@@ -101,26 +100,68 @@ public class CartServiceImpl implements CartService {
 	public String addToCart(CartRequestDto cartRequestDto) {
 		Cart cart = cartRepository.findByUserId(cartRequestDto.getUserId());
 		Product product = productRepository.findById(cartRequestDto.getProductId()).get();
+		List<CartItem> ct1 = cartItemRepository.findCartItemsByProductAndUserIdAndSize(cartRequestDto.getProductId(),
+				cartRequestDto.getUserId(), cartRequestDto.getSize());
+		List<CartItem> ct = cartItemRepository.findIfCartExist(cart.getId(), product.getId(), cartRequestDto.getSize(),
+				cartRequestDto.getUserId());
+//		System.out.println(cartItemRepository.findCartItemsByProductAndUserIdAndSize(cartRequestDto.getProductId(), cartRequestDto.getUserId(), cartRequestDto.getSize()));
 		CartItem cartItems = new CartItem();
-
-		if (cart.getCartItem() == null) {
+		System.out.println(cartItems);
+		if (ct.size() <= 0) {
 			CartItem cartItem = new CartItem();
 			cartItem.setQuantity(1);
-			//cartItem.setProduct(product);
-			//cartItem.setCarts(cart);
+			cartItem.setProduct(product);
 			cartItem.setPrice((int) (product.getPrice() * cartRequestDto.getQuantity()));
 			cartItem.setDiscountedPrice(product.getDiscountPrice() * cartRequestDto.getQuantity());
 			cartItem.setSize(cartRequestDto.getSize());
 			cartItem.setUserId(cartRequestDto.getUserId());
+
+			// Update cart total
+			cart.setTotalDiscountPrice(cart.getTotalDiscountPrice() + cartItem.getDiscountedPrice());
+			cart.setTotalItem(cart.getTotalItem() + cartItem.getQuantity());
+			cart.setTotalPrice(cart.getTotalPrice() + cartItem.getPrice());
+			// save cart
+			cartItem.setCart(cart);
+
 			cartItemRepository.save(cartItem);
 			return "Added successfully";
 		} else {
-			cartItems.setQuantity(cartItems.getQuantity() + 1);
-			cartItems.setPrice((int) (product.getPrice() * cartItems.getQuantity()));
-			cartItems.setDiscountedPrice(product.getDiscountPrice() * cartItems.getQuantity());
-			cartItemRepository.save(cartItems);
+			ct.forEach(item -> {
+				CartItem cartItem = new CartItem();
+				cartItem = item;
+				cartItem.setQuantity(cartItem.getQuantity() + 1);
+				cartItem.setPrice((int) (item.getProduct().getPrice() * cartItem.getQuantity()));
+				cartItem.setDiscountedPrice(item.getProduct().getDiscountPrice() * cartItem.getQuantity());
+
+				// Update the cart total
+				cart.setTotalDiscountPrice(cart.getTotalDiscountPrice() + cartItem.getDiscountedPrice());
+				cart.setTotalItem(cart.getTotalItem() + cartItem.getQuantity());
+				cart.setTotalPrice(cart.getTotalPrice() + cartItem.getPrice());
+				// save cart
+				cartItem.setCart(cart);
+
+				cartItemRepository.save(cartItem);
+			});
 			return "Added successfully";
 		}
 
+	}
+
+	public void updateCart(Cart cart) {
+		if (cart.getCartItem().isEmpty()) {
+			cart.setTotalDiscountPrice(0);
+			cart.setTotalItem(0);
+			cart.setTotalPrice(0);
+		} else {
+			cart.getCartItem().forEach(item -> {
+				// Update the cart total
+				cart.setTotalDiscountPrice(cart.getTotalDiscountPrice() - item.getDiscountedPrice());
+				cart.setTotalItem(cart.getTotalItem() - item.getQuantity());
+				cart.setTotalPrice(cart.getTotalPrice() - item.getPrice());
+				// save cart
+			});
+		}
+
+		cartRepository.save(cart);
 	}
 }

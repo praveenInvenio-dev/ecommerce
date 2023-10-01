@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import com.pavi.ecom.Exception.OrderException;
+import com.pavi.ecom.custom.CustomIdGenerator;
 import com.pavi.ecom.dto.OrderDTO;
 import com.pavi.ecom.mapper.OrderMapper;
 import com.pavi.ecom.model.Cart;
 import com.pavi.ecom.model.CartItem;
 import com.pavi.ecom.model.Orderitems;
 import com.pavi.ecom.model.Orders;
+import com.pavi.ecom.model.Product;
 import com.pavi.ecom.model.Users;
 import com.pavi.ecom.repository.CartRepository;
 import com.pavi.ecom.repository.OrderRepository;
@@ -38,6 +40,9 @@ public class OrderServiceImpl implements OrderService {
     private CartRepository cartRepository;
     
     @Autowired
+    private CustomIdGenerator customIdGenerator;
+    
+    @Autowired
     private OrderitemsRepository orderitemsRepository;
 
     @Autowired
@@ -49,9 +54,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
-        // Additional custom validation logic if needed
+    	   // Additional custom validation logic if needed
         if (orderDTO.getId() != null) {
-            throw new OrderException("New orders cannot have an ID.");
+        	this.updateOrder(orderDTO);
+            //throw new OrderException("New orders cannot have an ID.");
         }
         Orders orders = orderMapper.orderDTOToOrder(orderDTO); // Convert DTO to Entity
         Users user = usersRepository.findById(orderDTO.getUserId()).get();
@@ -68,9 +74,12 @@ public class OrderServiceImpl implements OrderService {
         	orderitem.setQuantity(cartitem.getQuantity());
         	orderitem.setSize(cartitem.getSize());
         	orderitem.setDeliveryDate(LocalDateTime.now());
+        	orderitem.setOrders(orders);
+        	orderitem.setProduct(cartitem.getProduct());
         	total = total + cartitem.getPrice();
         	discountval = discountval + cartitem.getDiscountedPrice();
         	quantity = quantity + cartitem.getQuantity();
+        	
         	orderitemsRepository.save(orderitem);
         	orderItems.add(orderitem);
         	
@@ -84,8 +93,12 @@ public class OrderServiceImpl implements OrderService {
         orders.setTotalDiscountedPrice(discountval);
         orders.setTotalItem(total);
         orders.setTotalItem(quantity);
+        orders.setOrderId(this.customIdGenerator.generateValue());
         orders.setUser(user);
+     
         Orders createdOrder = orderRepository.save(orders);
+
+        System.out.println("createdOrder"+createdOrder.getOrderId());
         return orderMapper.orderToOrderDTO(createdOrder); // Convert Entity to DTO
     }
 
@@ -121,8 +134,9 @@ public class OrderServiceImpl implements OrderService {
         if (orderDTO.getId() == null) {
             throw new OrderException("Orders ID must be provided for updates.");
         }
-
         Orders orders = orderMapper.orderDTOToOrder(orderDTO); // Convert DTO to Entity
+        System.out.println("order"+orders);
+       
         Orders updatedOrder = orderRepository.save(orders);
         return orderMapper.orderToOrderDTO(updatedOrder); // Convert Entity to DTO
     }

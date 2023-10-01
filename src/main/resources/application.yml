@@ -16,3 +16,8 @@ spring:
     
   application:
     name: user-details-application
+    
+razorpay:
+  api:
+    key: rzp_test_zwbn0zujMSBacP
+    secret: 3NQVFQlFUTspB5JcEIiAKDkG

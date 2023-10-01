@@ -22,6 +22,7 @@ public class OrderitemsServiceImpl implements OrderitemsService {
     @Autowired
     public OrderitemsServiceImpl(OrderitemsRepository orderitemsRepository, OrderitemsMapper orderitemsMapper) {
         this.orderitemsRepository = orderitemsRepository;
+    	
         this.orderitemsMapper = orderitemsMapper;
     }
 
@@ -32,6 +33,7 @@ public class OrderitemsServiceImpl implements OrderitemsService {
         }
 
         Orderitems orderitems = orderitemsMapper.orderitemsDTOToOrderitems(orderitemsDTO);
+        
         Orderitems createdOrderitems = orderitemsRepository.save(orderitems);
         return orderitemsMapper.orderitemsToOrderitemsDTO(createdOrderitems);
     }

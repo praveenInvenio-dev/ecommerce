@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,10 +31,12 @@ public class Orderitems {
 	private Long id;
 	
 	@ManyToOne
-	@JoinColumn(name="order_id", nullable = false)
+	@JoinColumn(name="order_id")
 	@JsonIgnore
 	private Orders orders;
-	
+	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+	@JoinColumn(name="product_id")
+	private Product product;
 	private String size;
 	private int quantity;
 	private double price;
